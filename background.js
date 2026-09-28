@@ -186,6 +186,8 @@ async function deepScan(tabId) {
       const res = await fetch(url, { credentials: "omit", redirect: "follow", cache: "default" });
       const text = await res.text();
       mergeFindings(tab, extractFindings(text));
+      // 自动拼接 sourcemap 地址并探测是否存在
+      probeSourceMap(url, text, tab);
     } catch (e) { /* 跨域/失败忽略 */ }
     tab.progress.done++;
     await setStore(store);
@@ -194,6 +196,27 @@ async function deepScan(tabId) {
   tab.progress.scanning = false;
   await setStore(store);
   updateBadge();
+}
+
+// 自动拼接 sourceMappingURL / xxx.js.map 并探测可达性
+async function probeSourceMap(jsUrl, jsText, tab) {
+  try {
+    const base = jsUrl.split("#")[0].split("?")[0];
+    const candidates = [];
+    // 1) 源码里 sourceMappingURL=xxx
+    const m = /\/\/#\s*sourceMappingURL=([^\s"'<>]+)/.exec(jsText || "");
+    if (m) {
+      candidates.push(new URL(m[1], jsUrl).href);
+    }
+    // 2) 直接拼 .map
+    if (base.endsWith(".js")) candidates.push(base + ".map");
+    for (const mapUrl of [...new Set(candidates)]) {
+      const r = await fetch(mapUrl, { method: "HEAD", credentials: "omit" });
+      if (r.ok && /(json|application)/.test(r.headers.get("content-type") || "")) {
+        mergeFindings(tab, { sourcemap: [mapUrl] });
+      }
+    }
+  } catch (e) { /* 忽略 */ }
 }
 
 // HTTP 安全响应头检查（HEAD 请求）

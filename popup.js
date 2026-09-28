@@ -43,7 +43,7 @@
     search: $("#search"), segBtns: document.querySelectorAll(".seg-btn"),
     collectBody: $("#collectBody"), findingsBody: $("#findingsBody"),
     badgeFindings: $("#badgeFindings"),
-    btnDeep: $("#btnDeep"), progress: $("#progress"),
+    btnDeep: $("#btnDeep"), btnExport: $("#btnExport"), progress: $("#progress"),
     progressText: $("#progressText"), progressFill: $("#progressFill"),
     optSafe: $("#optSafe"), optAllowlist: $("#optAllowlist"),
     btnSaveSettings: $("#btnSaveSettings"), btnClear: $("#btnClear")
@@ -142,7 +142,7 @@
     for (const c of cats) {
       const sv = severity[c] ?? 2;
       const items = findings[c] || [];
-      const title = (SEV_TAG[sv] || "中危") + " · " + (labels[c] || c);
+      const title = (sv < 2 ? (SEV_TAG[sv] || "") + " · " : "") + (labels[c] || c);
       renderGroup(els.findingsBody, title, items.length, items, SEV_COLOR[sv] || "#8e8e93");
     }
     renderProgress();
@@ -213,6 +213,34 @@
     els.btnDeep.addEventListener("click", () => {
       chrome.runtime.sendMessage({ kind: "apiScope.deepScan", tabId: activeTabId });
       setTimeout(load, 300);
+    });
+
+    // 导出 Markdown 报告
+    els.btnExport.addEventListener("click", () => {
+      const lines = [];
+      lines.push("# ApiScope 扫描报告");
+      lines.push("");
+      lines.push("- 时间: " + new Date().toLocaleString());
+      lines.push("- 页面接口: " + endpoints.length + " 个");
+      const totalF = Object.values(findings).reduce((a, b) => a + b.length, 0);
+      lines.push("- 敏感项: " + totalF + " 条");
+      lines.push("");
+      const sevName = { 0: "严重", 1: "高危", 2: "中危" };
+      const order = Object.keys(findings).filter((c) => findings[c] && findings[c].length)
+        .sort((a, b) => (severity[a] ?? 2) - (severity[b] ?? 2));
+      for (const c of order) {
+        lines.push("## [" + (sevName[severity[c]] || "中危") + "] " + (labels[c] || c) + " (" + findings[c].length + ")");
+        for (const v of findings[c]) lines.push("- " + v);
+        lines.push("");
+      }
+      lines.push("## API 接口 (" + endpoints.length + ")");
+      for (const e of endpoints) lines.push("- " + (e.method || "GET") + " " + e.url);
+      const blob = new Blob([lines.join("\n")], { type: "text/markdown;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "apiscope-report.md";
+      a.click();
+      URL.revokeObjectURL(a.href);
     });
 
     // 设置
