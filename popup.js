@@ -29,7 +29,8 @@
     tencent_cos: "#ff9f0a", slack_token: "#ff453a", slack_webhook: "#ff453a",
     discord_webhook: "#ff453a", telegram: "#ff453a", stripe: "#ff9f0a", sendgrid: "#ff9f0a",
     mailgun: "#ff9f0a", mongodb: "#bf5af2", postgres_url: "#bf5af2", mysql_url: "#bf5af2",
-    redis_url: "#bf5af2", bearer: "#ff453a", internal_ip: "#5ac8fa", basic_auth: "#ff453a"
+    redis_url: "#bf5af2", bearer: "#ff453a", internal_ip: "#5ac8fa", basic_auth: "#ff453a",
+    basic_auth_hdr: "#ff453a", auth_header: "#ff453a", jd_ak: "#ff9f0a", crypto_usage: "#8e8e93"
   };
 
   const els = {

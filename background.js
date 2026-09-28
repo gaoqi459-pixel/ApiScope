@@ -16,11 +16,11 @@ const RULES = {
   ip_port:  /\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d):\d{1,5}\b/g,
   domain:   /\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+(?:com|net|org|cn|io|co|dev|app|gov|edu|ai|xyz|top|vip|cc|me|info|biz|us|uk|de|jp|kr|hk|tw|ru|in|br|au|ca|fr|es|it|nl|se|no|fi|dk|pl|io)\b/gi,
   email:    /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g,
-  mobile:   /\b1[3-9]\d{9}\b/g,
-  idcard:   /\b[1-9]\d{5}(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])\d{3}[\dXx]\b/g,
+  mobile:   /(?<![\d.])(?:13\d|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18\d|19[0-35-9])\d{8}(?!\d)/g,
+  idcard:   /(?<![0-9a-zA-Z])[1-9]\d{5}(?:18|19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])\d{3}[0-9Xx](?![0-9a-zA-Z])/g,
   jwt:      /\beyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*\b/g,
-  aliyun_ak:/\bLTAI[A-Za-z0-9]{12,20}\b/g,
-  tencent_ak:/\bAKID[A-Za-z0-9]{13,20}\b/g,
+  aliyun_ak:/\bLTAI[A-Za-z0-9]{12,30}\b/g,
+  tencent_ak:/\bAKID[A-Za-z0-9]{13,40}\b/g,
   baidu_ak: /\bAK[A-Za-z0-9]{10,40}\b/g,
   volc_ak:  /\bAKLT[A-Za-z0-9-_]{8,252}\b/g,
   jdbc:     /\bjdbc:[a-zA-Z:]+:\/\/[A-Za-z0-9._:;=\/@?,&%~-]+\b/gi,
@@ -61,7 +61,11 @@ const RULES = {
   redis_url:/\bredis:?\/\/[^\s"'<>]+/gi,
   bearer:/\bBearer\s+[a-zA-Z0-9\-._~+/=]{20,}/g,
   internal_ip:/\b(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})\b/g,
-  basic_auth:/https?:\/\/[^:\s\/]+:[^@\s]+@/g
+  basic_auth:/https?:\/\/[^:\s\/]+:[^@\s]+@/g,
+  basic_auth_hdr:/\bBasic\s+[A-Za-z0-9+/]{18,}={0,2}\b/g,
+  auth_header:/["'\[]*[Aa]uthorization["'\]]*\s*[:=]\s*['"]?\b(?:[Tt]oken\s+)?[a-zA-Z0-9\-_+/]{20,500}['"]?/g,
+  jd_ak:    /\bJDC_[0-9A-Z]{25,40}\b/g,
+  crypto_usage:/\b(?:CryptoJS\.(?:AES|DES|RC4)|JSEncrypt|KJUR|md5|sha1|sha256|sha512)\s*\(/g
 };
 
 // 深度扫描时跳过的第三方库（减少噪音、加快扫描），参考 SnowEyes
@@ -85,7 +89,8 @@ const CATEGORY_LABELS = {
   slack_webhook: "Slack Webhook", discord_webhook: "Discord Webhook", telegram: "Telegram Bot",
   stripe: "Stripe Key", sendgrid: "SendGrid Key", mailgun: "Mailgun Key",
   mongodb: "MongoDB 连接串", postgres_url: "PostgreSQL 连接串", mysql_url: "MySQL 连接串",
-  redis_url: "Redis 连接串", bearer: "Bearer Token", internal_ip: "内网 IP", basic_auth: "Basic Auth"
+  redis_url: "Redis 连接串", bearer: "Bearer Token", internal_ip: "内网 IP", basic_auth: "Basic Auth",
+  basic_auth_hdr: "Basic 凭证", auth_header: "Authorization 头", jd_ak: "京东云 AK", crypto_usage: "前端加密调用"
 };
 
 // ---------- 存储 ----------
