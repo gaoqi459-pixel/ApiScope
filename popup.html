@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ApiScope</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">◎</span>
+      <span class="title">ApiScope</span>
+    </div>
+    <div class="status">
+      <span id="statusDot" class="dot"></span>
+      <span id="statusText">加载中…</span>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="endpoints">接口列表</button>
+    <button class="tab" data-tab="findings">敏感情报 <span id="badgeFindings" class="tab-badge hidden"></span></button>
+  </div>
+
+  <!-- ============ 接口列表 Tab ============ -->
+  <section id="pane-endpoints" class="pane">
+    <div class="toolbar">
+      <div class="seg" id="segFilter">
+        <button class="seg-btn active" data-filter="all">全部</button>
+        <button class="seg-btn" data-filter="api">API</button>
+        <button class="seg-btn" data-filter="url">URL</button>
+      </div>
+      <input id="search" class="search" type="text" placeholder="搜索接口关键字…" />
+    </div>
+    <div class="counts" id="counts">—</div>
+    <ul id="list" class="list"></ul>
+    <div id="empty" class="empty">暂无数据<br/><span>刷新页面后自动采集，或点击“重新扫描”</span></div>
+  </section>
+
+  <!-- ============ 敏感情报 Tab ============ -->
+  <section id="pane-findings" class="pane hidden">
+    <div class="deepbar">
+      <button id="btnDeep" class="btn primary">深度扫描 JS</button>
+      <div class="progress hidden" id="progress">
+        <div class="progress-text" id="progressText">准备扫描…</div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+    </div>
+    <div id="findings" class="findings"></div>
+    <div id="findingsEmpty" class="empty">暂无敏感信息<br/><span>已自动扫描页面源码；点击“深度扫描 JS”可进一步提取外链 JS 中的密钥</span></div>
+  </section>
+
+  <footer class="actions">
+    <button id="btnRescan" class="btn" title="重新扫描当前页面">重扫</button>
+    <button id="btnCopy" class="btn" title="复制当前列表">复制列表</button>
+    <button id="btnExportJson" class="btn" title="导出 JSON">JSON</button>
+    <button id="btnExportCsv" class="btn" title="导出 CSV">CSV</button>
+    <button id="btnSettings" class="btn" title="打开配置页">配置</button>
+    <button id="btnClear" class="btn danger" title="清空当前标签页数据">清空</button>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

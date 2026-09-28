@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>ApiScope 配置</title>
+  <style>
+    body { width: 420px; margin: 0; padding: 16px; background: #0f1115; color: #e6e8ec;
+           font: 13px/1.6 "Segoe UI", "Microsoft YaHei", sans-serif; }
+    h2 { font-size: 15px; margin: 0 0 12px; color: #4f8cff; }
+    .row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0;
+           border-bottom: 1px solid #2a2f3a; }
+    .row label { font-size: 13px; }
+    .desc { color: #8a93a3; font-size: 11px; margin-top: 2px; }
+    textarea { width: 100%; height: 120px; margin-top: 6px; background: #1e222c; color: #e6e8ec;
+               border: 1px solid #2a2f3a; border-radius: 6px; padding: 8px; font-family: Consolas, monospace; }
+    button { background: #4f8cff; color: #fff; border: none; border-radius: 6px;
+             padding: 6px 14px; cursor: pointer; }
+    button.gray { background: #1e222c; border: 1px solid #2a2f3a; }
+    .switch { position: relative; width: 38px; height: 20px; }
+    .switch input { display: none; }
+    .slider { position: absolute; inset: 0; background: #2a2f3a; border-radius: 10px; transition: .2s; }
+    .slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 2px; top: 2px;
+                      background: #fff; border-radius: 50%; transition: .2s; }
+    .switch input:checked + .slider { background: #2ecc71; }
+    .switch input:checked + .slider::before { transform: translateX(18px); }
+    .saved { color: #2ecc71; margin-left: 8px; visibility: hidden; }
+    .section-title { font-weight: 700; margin: 16px 0 4px; }
+  </style>
+</head>
+<body>
+  <h2>ApiScope 配置</h2>
+
+  <div class="row">
+    <div>
+      <label>安全模式</label>
+      <div class="desc">开启后深度扫描只抓取 .js 资源，避免触发非预期请求导致目标站登录态失效（默认开启）</div>
+    </div>
+    <label class="switch"><input type="checkbox" id="safeMode" checked /><span class="slider"></span></label>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>域名白名单（不主动扫描的域名）</label>
+      <div class="desc">每行一个域名后缀，如 .google.com；命中后该页面不启动深度扫描</div>
+    </div>
+  </div>
+  <textarea id="allowlist" spellcheck="false"></textarea>
+
+  <div style="margin-top: 12px;">
+    <button id="save">保存</button>
+    <button id="clear" class="gray">清空全部采集数据</button>
+    <span class="saved" id="saved">已保存 ✓</span>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>

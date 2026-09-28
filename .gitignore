@@ -1,0 +1,20 @@
+# Node / 构建
+node_modules/
+dist/
+build/
+
+# 打包产物
+*.zip
+*.crx
+*.pem
+
+# Python（图标脚本运行环境）
+__pycache__/
+*.pyc
+.venv/
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

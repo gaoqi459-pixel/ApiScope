@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "ApiScope — 页面 API 接口与敏感信息提取器",
+  "version": "2.0.0",
+  "description": "被动式网页信息提取工具：实时拦截 XHR/Fetch 接口，自动扫描页面源码与 JS 文件，提取 API 端点、IP/域名/邮箱/手机号/身份证/JWT/云密钥/Swagger/Shiro 等敏感情报，支持分类展示、深度扫描与一键导出。",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "ApiScope",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "options_ui": {
+    "page": "settings.html",
+    "open_in_tab": false
+  }
+}
