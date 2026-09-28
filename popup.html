@@ -14,51 +14,69 @@
     </div>
     <div class="status">
       <span id="statusDot" class="dot"></span>
-      <span id="statusText">加载中…</span>
+      <span id="statusText">就绪</span>
     </div>
   </header>
 
-  <div class="tabs">
-    <button class="tab active" data-tab="endpoints">接口列表</button>
-    <button class="tab" data-tab="findings">敏感情报 <span id="badgeFindings" class="tab-badge hidden"></span></button>
-  </div>
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="collect">信息采集</button>
+    <button class="tab" data-tab="secrets">敏感情报 <span id="badgeFindings" class="tab-badge hidden"></span></button>
+    <button class="tab" data-tab="settings">配置</button>
+    <span class="tab-indicator" id="tabIndicator"></span>
+  </nav>
 
-  <!-- ============ 接口列表 Tab ============ -->
-  <section id="pane-endpoints" class="pane">
-    <div class="toolbar">
-      <div class="seg" id="segFilter">
-        <button class="seg-btn active" data-filter="all">全部</button>
-        <button class="seg-btn" data-filter="api">API</button>
-        <button class="seg-btn" data-filter="url">URL</button>
+  <main class="content">
+    <!-- ============ 信息采集 ============ -->
+    <section id="pane-collect" class="pane">
+      <div class="toolbar">
+        <input id="search" class="search" type="text" placeholder="搜索接口…" />
+        <div class="seg" id="segFilter">
+          <button class="seg-btn active" data-filter="all">全部</button>
+          <button class="seg-btn" data-filter="api">API</button>
+          <button class="seg-btn" data-filter="url">URL</button>
+        </div>
       </div>
-      <input id="search" class="search" type="text" placeholder="搜索接口关键字…" />
-    </div>
-    <div class="counts" id="counts">—</div>
-    <ul id="list" class="list"></ul>
-    <div id="empty" class="empty">暂无数据<br/><span>刷新页面后自动采集，或点击“重新扫描”</span></div>
-  </section>
+      <div id="collectBody" class="groups"></div>
+    </section>
 
-  <!-- ============ 敏感情报 Tab ============ -->
-  <section id="pane-findings" class="pane hidden">
-    <div class="deepbar">
-      <button id="btnDeep" class="btn primary">深度扫描 JS</button>
-      <div class="progress hidden" id="progress">
-        <div class="progress-text" id="progressText">准备扫描…</div>
-        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <!-- ============ 敏感情报 ============ -->
+    <section id="pane-secrets" class="pane hidden">
+      <div class="deepbar">
+        <button id="btnDeep" class="btn-primary">深度扫描 JS</button>
+        <div class="progress hidden" id="progress">
+          <div class="progress-text" id="progressText">准备扫描…</div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
       </div>
-    </div>
-    <div id="findings" class="findings"></div>
-    <div id="findingsEmpty" class="empty">暂无敏感信息<br/><span>已自动扫描页面源码；点击“深度扫描 JS”可进一步提取外链 JS 中的密钥</span></div>
-  </section>
+      <div id="findingsBody" class="groups"></div>
+    </section>
 
-  <footer class="actions">
-    <button id="btnRescan" class="btn" title="重新扫描当前页面">重扫</button>
-    <button id="btnCopy" class="btn" title="复制当前列表">复制列表</button>
-    <button id="btnExportJson" class="btn" title="导出 JSON">JSON</button>
-    <button id="btnExportCsv" class="btn" title="导出 CSV">CSV</button>
-    <button id="btnSettings" class="btn" title="打开配置页">配置</button>
-    <button id="btnClear" class="btn danger" title="清空当前标签页数据">清空</button>
-  </footer>
+    <!-- ============ 配置 ============ -->
+    <section id="pane-settings" class="pane hidden">
+      <div class="setting-row">
+        <div>
+          <div class="setting-title">安全模式</div>
+          <div class="setting-desc">深度扫描仅抓取 .js 资源，避免触发非预期请求</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="optSafe" checked /><span class="knob"></span></label>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-title">域名白名单</div>
+          <div class="setting-desc">每行一个后缀，命中后不做深度扫描</div>
+        </div>
+      </div>
+      <textarea id="optAllowlist" class="allowlist" spellcheck="false"></textarea>
+      <div class="setting-actions">
+        <button id="btnSaveSettings" class="btn-primary">保存设置</button>
+        <button id="btnClear" class="btn-ghost">清空采集数据</button>
+      </div>
+      <div class="about">
+        <div class="about-title">ApiScope v2.1</div>
+        <div class="about-desc">被动式网页接口与敏感信息提取器 · 数据仅存本地</div>
+      </div>
+    </section>
+  </main>
 
   <script src="popup.js"></script>
 </body>
