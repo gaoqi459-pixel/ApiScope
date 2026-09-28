@@ -204,16 +204,15 @@ const STATIC_EXT = /\.(js|mjs|css|png|jpe?g|gif|svg|ico|woff2?|ttf|eot|map|html?
 const NOISE_DIR = /^\/(node_modules|static|assets?|public|fonts?|images?|img|css|js|lib(?:s)?|dist|build|chunk)\//i;
 function extractEndpointsFromJs(text, baseUrl, tab) {
   if (!text) return;
-  const re = /["'`](\/[A-Za-z0-9_\-]{1,}(?:\/[A-Za-z0-9_.\-$]{1,80})*)["'`]/g;
+  const re = /["'`](\/[A-Za-z0-9_\-]{1,}(?:\/[A-Za-z0-9_.\-]{1,80})*)(?=["'`?\s:,;)])/g;
   let m;
   const have = new Set(tab.endpoints.map((e) => e.url));
   let added = 0;
   while ((m = re.exec(text))) {
-    const p = m[1];
-    if (p.length < 3 || p.length > 120) continue;
+    let p = m[1].replace(/[&"'`\s.;,)]+$/, "");
+    if (p.length < 2 || p.length > 120) continue;
     if (STATIC_EXT.test(p) || NOISE_DIR.test(p)) continue;
-    const seg = p.split("/").length - 1;
-    if (seg < 2 && !/\/(api|rest|graphql|v\d|service|ajax|gateway)/i.test(p)) continue;
+    if (!/^\//.test(p)) continue;
     if (have.has(p)) continue;
     have.add(p);
     tab.endpoints.push({ method: "GET", url: p, status: 0, type: "api", source: "js", time: Date.now() });
