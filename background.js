@@ -186,6 +186,7 @@ async function deepScan(tabId) {
       const res = await fetch(url, { credentials: "omit", redirect: "follow", cache: "default" });
       const text = await res.text();
       mergeFindings(tab, extractFindings(text));
+      extractEndpointsFromJs(text, url, tab);
       // 自动拼接 sourcemap 地址并探测是否存在
       probeSourceMap(url, text, tab);
     } catch (e) { /* 跨域/失败忽略 */ }
@@ -196,6 +197,29 @@ async function deepScan(tabId) {
   tab.progress.scanning = false;
   await setStore(store);
   updateBadge();
+}
+
+// 从 JS 源码里提取写死的 API 绝对路径（参考 FindSomething / Phantom）
+const STATIC_EXT = /\.(js|mjs|css|png|jpe?g|gif|svg|ico|woff2?|ttf|eot|map|html?|txt|xml|webp|avif|mp4|webm)(\?|$)/i;
+const NOISE_DIR = /^\/(node_modules|static|assets?|public|fonts?|images?|img|css|js|lib(?:s)?|dist|build|chunk)\//i;
+function extractEndpointsFromJs(text, baseUrl, tab) {
+  if (!text) return;
+  const re = /["'`](\/[A-Za-z0-9_\-]{1,}(?:\/[A-Za-z0-9_.\-$]{1,80})*)["'`]/g;
+  let m;
+  const have = new Set(tab.endpoints.map((e) => e.url));
+  let added = 0;
+  while ((m = re.exec(text))) {
+    const p = m[1];
+    if (p.length < 3 || p.length > 120) continue;
+    if (STATIC_EXT.test(p) || NOISE_DIR.test(p)) continue;
+    const seg = p.split("/").length - 1;
+    if (seg < 2 && !/\/(api|rest|graphql|v\d|service|ajax|gateway)/i.test(p)) continue;
+    if (have.has(p)) continue;
+    have.add(p);
+    tab.endpoints.push({ method: "GET", url: p, status: 0, type: "api", source: "js", time: Date.now() });
+    added++;
+  }
+  if (added && tab.endpoints.length > MAX_PER_TAB) tab.endpoints.splice(0, tab.endpoints.length - MAX_PER_TAB);
 }
 
 // 自动拼接 sourceMappingURL / xxx.js.map 并探测可达性
@@ -288,6 +312,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         }
         // 页面源码本身先跑一遍正则
         mergeFindings(tab, extractFindings(msg.html || ""));
+        extractEndpointsFromJs(msg.html || "", (sender.tab && sender.tab.url) || location.origin, tab);
         tab.updatedAt = Date.now();
         store[tabId] = tab;
         await setStore(store);
