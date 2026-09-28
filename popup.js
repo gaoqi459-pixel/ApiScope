@@ -9,6 +9,9 @@
   let findings = {};
   let labels = {};
   let progress = { scanning: false, done: 0, total: 0 };
+  let severity = {};
+  const SEV_COLOR = { 0: "#ff3b30", 1: "#ff9f0a", 2: "#ffcc00" };
+  const SEV_TAG = { 0: "严重", 1: "高危", 2: "中危" };
   let filter = "all";
   let keyword = "";
   let pollTimer = null;
@@ -139,9 +142,11 @@
       return;
     }
     // 按类别数量从多到少排
-    cats.sort((a, b) => findings[b].length - findings[a].length);
+    cats.sort((a, b) => (severity[a] ?? 2) - (severity[b] ?? 2) || findings[b].length - findings[a].length);
     for (const c of cats) {
-      renderGroup(els.findingsBody, labels[c] || c, findings[c].length, findings[c], CAT_COLOR[c] || "#8e8e93");
+      const sv = severity[c] ?? 2;
+      const title = (SEV_TAG[sv] || "中危") + " · " + (labels[c] || c);
+      renderGroup(els.findingsBody, title, findings[c].length, findings[c], SEV_COLOR[sv] || "#8e8e93");
     }
     renderProgress();
   }
@@ -174,6 +179,7 @@
       endpoints = res.endpoints || [];
       findings = res.findings || {};
       labels = res.labels || {};
+      severity = res.severity || {};
       progress = res.progress || { scanning: false, done: 0, total: 0 };
       renderCollect();
       renderFindings();

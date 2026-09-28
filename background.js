@@ -65,7 +65,14 @@ const RULES = {
   basic_auth_hdr:/\bBasic\s+[A-Za-z0-9+/]{18,}={0,2}\b/g,
   auth_header:/["'\[]*[Aa]uthorization["'\]]*\s*[:=]\s*['"]?\b(?:[Tt]oken\s+)?[a-zA-Z0-9\-_+/]{20,500}['"]?/g,
   jd_ak:    /\bJDC_[0-9A-Z]{25,40}\b/g,
-  crypto_usage:/\b(?:CryptoJS\.(?:AES|DES|RC4)|JSEncrypt|KJUR|md5|sha1|sha256|sha512)\s*\(/g
+  crypto_usage:/\b(?:CryptoJS\.(?:AES|DES|RC4)|JSEncrypt|KJUR|md5|sha1|sha256|sha512)\s*\(/g,
+  // —— 源码/敏感文件暴露 ——
+  sourcemap:/\/\/#\s*sourceMappingURL=([^\s"'<>]+)/g,
+  git_ref:  /(?:^|["'\/])\.git\/(?:config|HEAD|index|refs|logs)/gi,
+  env_ref:  /(?:^|["'\/])\.env(?:\.|["'\/]|["'\s])/gi,
+  swagger_path:/\/swagger-ui\.html|\/v[23]\/api-docs|\/swagger\.json/gi,
+  actuator: /\/actuator\/(?:health|env|heapdump|beans|mappings|configprops|trace)/gi,
+  druid:    /\/druid\/(?:index\.html|login\.html|datasource\.json|websession\.json)/gi
 };
 
 // 深度扫描时跳过的第三方库（减少噪音、加快扫描），参考 SnowEyes
@@ -90,7 +97,24 @@ const CATEGORY_LABELS = {
   stripe: "Stripe Key", sendgrid: "SendGrid Key", mailgun: "Mailgun Key",
   mongodb: "MongoDB 连接串", postgres_url: "PostgreSQL 连接串", mysql_url: "MySQL 连接串",
   redis_url: "Redis 连接串", bearer: "Bearer Token", internal_ip: "内网 IP", basic_auth: "Basic Auth",
-  basic_auth_hdr: "Basic 凭证", auth_header: "Authorization 头", jd_ak: "京东云 AK", crypto_usage: "前端加密调用"
+  basic_auth_hdr: "Basic 凭证", auth_header: "Authorization 头", jd_ak: "京东云 AK", crypto_usage: "前端加密调用",
+  sourcemap: "SourceMap 泄露", git_ref: ".git 目录暴露", env_ref: ".env 文件暴露",
+  swagger_path: "Swagger 文档", actuator: "Actuator 端点", druid: "Druid 监控台", security_headers: "安全头缺失"
+};
+
+// 风险等级：0=严重 1=高危 2=中危
+const SEVERITY = {
+  // 严重：直接泄露密钥/凭据/私钥
+  private_key:0, aws_secret:0, aliyun_ak:0, tencent_ak:0, baidu_ak:0, volc_ak:0, aws_ak:0, jd_ak:0,
+  google_api:0, github_token:0, gitlab_token:0, wechat:0, wecom:0, alipay:0, credential:0, session:0,
+  jdbc:0, mongodb:0, postgres_url:0, mysql_url:0, redis_url:0, bearer:0, basic_auth:0, basic_auth_hdr:0,
+  auth_header:0, slack_token:0, slack_webhook:0, discord_webhook:0, telegram:0, stripe:0, sendgrid:0,
+  mailgun:0, s3_bucket:0, aliyun_oss:0, tencent_cos:0,
+  // 高危：PII / 已知漏洞端点 / 信息泄露
+  jwt:1, idcard:1, mobile:1, internal_ip:1, swagger:1, shiro:1, admin_path:1,
+  git_ref:1, env_ref:1, swagger_path:1, actuator:1, druid:1, sourcemap:1, security_headers:1,
+  // 中危：指纹/加密/联系方式
+  email:2, algorithm:2, crypto_usage:2, company:2, webpack:2, django:2, api_key:2
 };
 
 // ---------- 存储 ----------
@@ -166,9 +190,27 @@ async function deepScan(tabId) {
     tab.progress.done++;
     await setStore(store);
   }
+  await checkSecurityHeaders(tabId, tab);
   tab.progress.scanning = false;
   await setStore(store);
   updateBadge();
+}
+
+// HTTP 安全响应头检查（HEAD 请求）
+async function checkSecurityHeaders(tabId, tab) {
+  try {
+    const [cur] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const url = cur && cur.id === tabId ? cur.url : null;
+    if (!url || !/^https?:/.test(url)) return;
+    const res = await fetch(url, { method: "HEAD", credentials: "omit", redirect: "follow" });
+    const miss = [];
+    if (!res.headers.get("content-security-policy")) miss.push("缺少 CSP");
+    if (!res.headers.get("x-frame-options")) miss.push("缺少 X-Frame-Options（点击劫持）");
+    if (!res.headers.get("strict-transport-security")) miss.push("缺少 HSTS");
+    if (!res.headers.get("x-content-type-options")) miss.push("缺少 X-Content-Type-Options");
+    if (!res.headers.get("referrer-policy")) miss.push("缺少 Referrer-Policy");
+    if (miss.length) mergeFindings(tab, { security_headers: miss });
+  } catch (e) { /* HEAD 不支持时忽略 */ }
 }
 
 function findingsCount(tab) {
@@ -246,6 +288,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           findings: tab.findings,
           progress: tab.progress,
           labels: CATEGORY_LABELS,
+          severity: SEVERITY,
           tabId: msg.tabId
         };
       }
