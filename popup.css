@@ -119,6 +119,12 @@ body {
   vertical-align: middle;
 }
 .chip.empty { background: transparent; box-shadow: none; color: var(--text-3); text-align: center; cursor: default; padding: 24px; grid-column: 1 / -1; }
+.chip.empty-wu {
+  background: rgba(255,149,0,.12); color: #ff9f0a; box-shadow: none;
+  width: 34px; height: 34px; padding: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; border-radius: 8px; cursor: default; animation: none;
+}
+.chip.empty-wu::before { display: none; }
 @keyframes chipIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
 
 /* 深度扫描条 */

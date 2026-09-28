@@ -129,24 +129,21 @@
   // 敏感情报 tab
   function renderFindings() {
     const SKIP = { domain: 1, ip: 1, ip_port: 1 };
-  const cats = Object.keys(findings).filter((c) => findings[c] && findings[c].length && !SKIP[c]);
-    const total = cats.reduce((s, c) => s + findings[c].length, 0);
+    const cats = Object.keys(labels).filter((c) => !SKIP[c]);
+    const total = cats.reduce((s, c) => s + (findings[c] ? findings[c].length : 0), 0);
     if (total > 0) {
       els.badgeFindings.textContent = total > 99 ? "99+" : total;
       els.badgeFindings.classList.remove("hidden");
     } else els.badgeFindings.classList.add("hidden");
 
     els.findingsBody.innerHTML = "";
-    if (!cats.length) {
-      renderGroup(els.findingsBody, "敏感情报", 0, [], "#8e8e93");
-      return;
-    }
-    // 按类别数量从多到少排
-    cats.sort((a, b) => (severity[a] ?? 2) - (severity[b] ?? 2) || findings[b].length - findings[a].length);
+    cats.sort((a, b) => (severity[a] ?? 2) - (severity[b] ?? 2) ||
+      ((findings[b] ? findings[b].length : 0) - (findings[a] ? findings[a].length : 0)));
     for (const c of cats) {
       const sv = severity[c] ?? 2;
+      const items = findings[c] || [];
       const title = (SEV_TAG[sv] || "中危") + " · " + (labels[c] || c);
-      renderGroup(els.findingsBody, title, findings[c].length, findings[c], SEV_COLOR[sv] || "#8e8e93");
+      renderGroup(els.findingsBody, title, items.length, items, SEV_COLOR[sv] || "#8e8e93");
     }
     renderProgress();
   }
