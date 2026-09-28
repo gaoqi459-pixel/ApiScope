@@ -172,3 +172,11 @@ body {
 .about { margin-top: 24px; text-align: center; color: var(--text-3); }
 .about-title { font-size: 12px; font-weight: 600; color: var(--text-2); }
 .about-desc { font-size: 11px; margin-top: 3px; }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px);
+  background: rgba(29,29,31,.92); color: #fff; font-size: 12px; font-weight: 500;
+  padding: 8px 16px; border-radius: 980px; pointer-events: none;
+  opacity: 0; transition: opacity .25s, transform .25s; backdrop-filter: blur(10px); z-index: 99;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }

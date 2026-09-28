@@ -53,13 +53,20 @@
     els.statusDot.className = "dot" + (on ? " on" : "");
     els.statusText.textContent = text;
   }
-  function copyText(text, btn) {
-    navigator.clipboard.writeText(text).then(() => {
-      if (btn) { const old = btn.textContent; btn.textContent = "已复制"; setTimeout(() => (btn.textContent = old), 900); }
-    }).catch(() => {
+  let toastTimer = null;
+  function showToast(msg) {
+    const t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 1000);
+  }
+  function copyText(text) {
+    const done = () => showToast("已复制");
+    navigator.clipboard.writeText(text).then(done).catch(() => {
       const ta = document.createElement("textarea");
       ta.value = text; document.body.appendChild(ta); ta.select();
-      document.execCommand("copy"); ta.remove();
+      document.execCommand("copy"); ta.remove(); done();
     });
   }
 
