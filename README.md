@@ -8,6 +8,10 @@
 [![Chrome](https://img.shields.io/badge/Chrome/Edge-Chromium-4285f4.svg)](#)
 [![license](https://img.shields.io/badge/license-MIT-lightgrey.svg)](./LICENSE)
 
+<p align="center">
+  <img src="./screenshot.png" alt="ApiScope popup" width="360">
+</p>
+
 ---
 
 ## ✨ 特性
