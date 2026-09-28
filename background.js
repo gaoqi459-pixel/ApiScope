@@ -41,7 +41,27 @@ const RULES = {
   session:  /\b(?:PHPSESSID|JSESSIONID|sessionid|token)\s*[:=]\s*["']?[a-zA-Z0-9._\-]{8,}["']?/gi,
   company:  /[一-龥]{4,15}(?:公司|中心|科技|集团|软件)/g,
   webpack:  /\b(?:webpackJsonp|__webpack_require__|webpack-dev-server)\b/i,
-  django:   /\bcsrfmiddlewaretoken\b/i
+  django:   /\bcsrfmiddlewaretoken\b/i,
+  // —— 企业级凭据/密钥/连接串（参考 TruffleHog / Gitleaks 公开规则）——
+  private_key:/-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----/g,
+  aws_secret:/(?:aws_secret_access_key|secret_access_key|aws_secret)["'\s]?[:=]\s*["']?([A-Za-z0-9/+=]{40})\b/g,
+  s3_bucket:/\b[a-z0-9.\-]+\.s3[.-][a-z0-9-]+\.amazonaws\.com\b/gi,
+  aliyun_oss:/\b[a-z0-9.\-]+\.oss-[a-z0-9-]+\.aliyuncs\.com\b/gi,
+  tencent_cos:/\b[a-z0-9.\-]+\.cos\.[a-z0-9-]+\.myqcloud\.com\b/gi,
+  slack_token:/\bxox[baprs]-[0-9a-zA-Z-]{10,72}\b/g,
+  slack_webhook:/https:\/\/hooks\.slack\.com\/services\/[A-Za-z0-9]+\/[A-Za-z0-9]+\/[A-Za-z0-9]+/g,
+  discord_webhook:/https:\/\/(?:discord\.com|discordapp\.com)\/api\/webhooks\/\d+\/[A-Za-z0-9_-]+/g,
+  telegram:/\b\d{8,10}:[A-Za-z0-9_-]{35}\b/g,
+  stripe:/\b(?:sk|pk)_(?:live|test)_[0-9a-zA-Z]{20,}\b/g,
+  sendgrid:/\bSG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}\b/g,
+  mailgun:/\bkey-[0-9a-zA-Z]{32}\b/g,
+  mongodb:/\bmongodb(?:\+srv)?:\/\/[^\s"'<>]+/gi,
+  postgres_url:/\bpostgres(?:ql)?:\/\/[^\s"'<>]+/gi,
+  mysql_url:/\bmysql:?\/\/[^\s"'<>]+/gi,
+  redis_url:/\bredis:?\/\/[^\s"'<>]+/gi,
+  bearer:/\bBearer\s+[a-zA-Z0-9\-._~+/=]{20,}/g,
+  internal_ip:/\b(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})\b/g,
+  basic_auth:/https?:\/\/[^:\s\/]+:[^@\s]+@/g
 };
 
 // 深度扫描时跳过的第三方库（减少噪音、加快扫描），参考 SnowEyes
@@ -59,7 +79,13 @@ const CATEGORY_LABELS = {
   swagger: "Swagger", shiro: "Shiro", admin_path: "敏感路径", algorithm: "加密算法",
   aws_ak: "AWS密钥", google_api: "Google API", github_token: "GitHub Token", gitlab_token: "GitLab Token",
   wechat: "微信密钥", wecom: "企业微信密钥", alipay: "支付宝密钥", credential: "账号密码",
-  session: "Session/Cookie", company: "公司名", webpack: "Webpack", django: "Django"
+  session: "Session/Cookie", company: "公司名", webpack: "Webpack", django: "Django",
+  private_key: "私钥文件", aws_secret: "AWS SecretKey", s3_bucket: "S3 Bucket",
+  aliyun_oss: "阿里云 OSS", tencent_cos: "腾讯云 COS", slack_token: "Slack Token",
+  slack_webhook: "Slack Webhook", discord_webhook: "Discord Webhook", telegram: "Telegram Bot",
+  stripe: "Stripe Key", sendgrid: "SendGrid Key", mailgun: "Mailgun Key",
+  mongodb: "MongoDB 连接串", postgres_url: "PostgreSQL 连接串", mysql_url: "MySQL 连接串",
+  redis_url: "Redis 连接串", bearer: "Bearer Token", internal_ip: "内网 IP", basic_auth: "Basic Auth"
 };
 
 // ---------- 存储 ----------

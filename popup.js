@@ -24,7 +24,12 @@
     credential: "#ff453a", session: "#ff453a",
     jdbc: "#bf5af2", api_key: "#ff6a00", swagger: "#bf5af2", shiro: "#bf5af2",
     admin_path: "#bf5af2", algorithm: "#8e8e93", company: "#8e8e93",
-    webpack: "#8e8e93", django: "#8e8e93"
+    webpack: "#8e8e93", django: "#8e8e93",
+    private_key: "#ff453a", aws_secret: "#ff9f0a", s3_bucket: "#ff9f0a", aliyun_oss: "#ff9f0a",
+    tencent_cos: "#ff9f0a", slack_token: "#ff453a", slack_webhook: "#ff453a",
+    discord_webhook: "#ff453a", telegram: "#ff453a", stripe: "#ff9f0a", sendgrid: "#ff9f0a",
+    mailgun: "#ff9f0a", mongodb: "#bf5af2", postgres_url: "#bf5af2", mysql_url: "#bf5af2",
+    redis_url: "#bf5af2", bearer: "#ff453a", internal_ip: "#5ac8fa", basic_auth: "#ff453a"
   };
 
   const els = {
@@ -111,11 +116,16 @@
     const urls = list.filter((r) => r.type !== "api");
     renderGroup(els.collectBody, "API 接口（绝对路径）", apis.length, apis, "#bf5af2", { method: true });
     renderGroup(els.collectBody, "URL / 静态资源", urls.length, urls, "#0071e3", { method: true });
+    if (findings.domain && findings.domain.length)
+      renderGroup(els.collectBody, "域名", findings.domain.length, findings.domain, "#0071e3");
+    if (findings.ip && findings.ip.length)
+      renderGroup(els.collectBody, "IP", findings.ip.length, findings.ip, "#5ac8fa");
   }
 
   // 敏感情报 tab
   function renderFindings() {
-    const cats = Object.keys(findings).filter((c) => findings[c] && findings[c].length);
+    const SKIP = { domain: 1, ip: 1, ip_port: 1 };
+  const cats = Object.keys(findings).filter((c) => findings[c] && findings[c].length && !SKIP[c]);
     const total = cats.reduce((s, c) => s + findings[c].length, 0);
     if (total > 0) {
       els.badgeFindings.textContent = total > 99 ? "99+" : total;
