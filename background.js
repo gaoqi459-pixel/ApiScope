@@ -45,6 +45,7 @@ const RULES = {
   // —— 企业级凭据/密钥/连接串（参考 TruffleHog / Gitleaks 公开规则）——
   private_key:/-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----/g,
   aws_secret:/(?:aws_secret_access_key|secret_access_key|aws_secret)["'\s]?[:=]\s*["']?([A-Za-z0-9/+=]{40})\b/g,
+  secret_key:/(?:secretKey|secret_key|SecretKey|AccessKeySecret|accessKeySecret|access_key_secret|appSecret|app_secret|clientSecret|client_secret|secretAccessKey|SecretAccessKey|AWS_SECRET_ACCESS_KEY|PRIVATE_KEY_SECRET|SIGNING_SECRET|signing_secret)["'\s]*[:=]\s*["']([A-Za-z0-9/+=_\-.]{16,128})["']/g,
   s3_bucket:/\b[a-z0-9.\-]+\.s3[.-][a-z0-9-]+\.amazonaws\.com\b/gi,
   aliyun_oss:/\b[a-z0-9.\-]+\.oss-[a-z0-9-]+\.aliyuncs\.com\b/gi,
   tencent_cos:/\b[a-z0-9.\-]+\.cos\.[a-z0-9-]+\.myqcloud\.com\b/gi,
@@ -91,7 +92,7 @@ const CATEGORY_LABELS = {
   aws_ak: "AWS密钥", google_api: "Google API", github_token: "GitHub Token", gitlab_token: "GitLab Token",
   wechat: "微信密钥", wecom: "企业微信密钥", alipay: "支付宝密钥", credential: "账号密码",
   session: "Session/Cookie", company: "公司名", webpack: "Webpack", django: "Django",
-  private_key: "私钥文件", aws_secret: "AWS SecretKey", s3_bucket: "S3 Bucket",
+  private_key: "私钥文件", aws_secret: "AWS SecretKey", secret_key: "SecretKey", s3_bucket: "S3 Bucket",
   aliyun_oss: "阿里云 OSS", tencent_cos: "腾讯云 COS", slack_token: "Slack Token",
   slack_webhook: "Slack Webhook", discord_webhook: "Discord Webhook", telegram: "Telegram Bot",
   stripe: "Stripe Key", sendgrid: "SendGrid Key", mailgun: "Mailgun Key",
@@ -105,7 +106,7 @@ const CATEGORY_LABELS = {
 // 风险等级：0=严重 1=高危 2=中危
 const SEVERITY = {
   // 严重：直接泄露密钥/凭据/私钥
-  private_key:0, aws_secret:0, aliyun_ak:0, tencent_ak:0, baidu_ak:0, volc_ak:0, aws_ak:0, jd_ak:0,
+  private_key:0, aws_secret:0, secret_key:0, aliyun_ak:0, tencent_ak:0, baidu_ak:0, volc_ak:0, aws_ak:0, jd_ak:0,
   google_api:0, github_token:0, gitlab_token:0, wechat:0, wecom:0, alipay:0, credential:0, session:0,
   jdbc:0, mongodb:0, postgres_url:0, mysql_url:0, redis_url:0, bearer:0, basic_auth:0, basic_auth_hdr:0,
   auth_header:0, slack_token:0, slack_webhook:0, discord_webhook:0, telegram:0, stripe:0, sendgrid:0,
